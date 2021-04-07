@@ -97,6 +97,7 @@ public class HyperGraph {
             System.out.println("partition_score: " + partition_score);
         } while (best_partition_in_pass_score > best_partition_in_steps_score);
         this.restore_partition(this.best_partition_in_steps);
+        this.get_partition_score();
         System.out.println("================== !!! DONE !!! ==================");
         System.out.println("balance_score: " + balance_score);
         System.out.println("num_of_cuts: " + num_of_cuts);
@@ -115,7 +116,7 @@ public class HyperGraph {
 
     private void FM_pass(){
         this.save_pass_partition();
-        this.best_partition_in_pass_score = this.get_partition_score_light();
+        this.best_partition_in_pass_score = this.get_partition_score_lite();
         while (!left_gain_container.isEmpty() && !right_gain_container.isEmpty()){
             Node best_move = get_node_for_best_move();
             this.num_of_cuts -= best_move.gain;
@@ -126,7 +127,7 @@ public class HyperGraph {
 //                this.remove_node_from_containers(n);
 //                this.containers_add(n);
 //            }
-            this.get_partition_score_light();
+            this.get_partition_score_lite();
             if (this.partition_score > this.best_partition_in_pass_score){
                 this.best_partition_in_pass_score = this.partition_score;
                 this.save_pass_partition();
@@ -246,23 +247,35 @@ public class HyperGraph {
         }
     }
 
-    public float get_partition_score_light(){
+    public float get_partition_score_lite(){
         this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
         this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
         this.partition_score = this.balance_score/this.cut_cost;
         return this.partition_score;
     }
 
+    private void left_right_counter(Node node){
+        if (node.getSide() == LEFT){
+            lefts++;
+        } else {
+            rights++;
+        }
+    }
+
     public float get_partition_score(){
         this.lefts=0;
         this.rights=0;
-        for(int i=1; i <= this.num_of_nodes; i++){
-            if (this.nodes.get(i).getSide() == LEFT){
-                lefts++;
-            } else {
-                rights++;
-            }
-        }
+
+        this.nodes.forEach((k, v) -> this.left_right_counter(v));
+
+//        for(int i=1; i <= this.num_of_nodes; i++){
+//            if (this.nodes.get(i).getSide() == LEFT){
+//                lefts++;
+//            } else {
+//                rights++;
+//            }
+//        }
+
         this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
         this.num_of_cuts=0;
         for (HyperEdge edge: edges) {
