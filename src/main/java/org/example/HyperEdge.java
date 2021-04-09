@@ -1,6 +1,7 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class HyperEdge {
     private ArrayList<Node> nodes = null;
@@ -20,6 +21,10 @@ public class HyperEdge {
         nodes.add(node);
     }
 
+    public void add_nodes(Collection<Node> nodes){
+        this.nodes.addAll(nodes);
+    }
+
     public boolean contains(Node node){
         return nodes.contains(node);
     }
@@ -34,7 +39,7 @@ public class HyperEdge {
         return true;
     }
 
-    public boolean all_nodes_on_the_other_side_of(Node node){ // ПРОВЕРИТЬ!!!
+    public boolean all_nodes_on_the_other_side_of(Node node){
         boolean side = node.getSide();
         int key = node.get_key();
         for (Node n: nodes) {

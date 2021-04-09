@@ -1,5 +1,8 @@
 package org.example;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Node {
     private static final boolean LEFT = false;
     private static final boolean RIGHT = true;
@@ -7,8 +10,12 @@ public class Node {
     private boolean locked = false;
     private Integer key;
     public int gain;
+    public Set<Node> incident_nodes;
+    public Set<HyperEdge> incident_edges;
 
     public Node(){
+        incident_nodes = new HashSet<>();
+        incident_edges = new HashSet<>();
     }
 
     public boolean isNotLocked(){

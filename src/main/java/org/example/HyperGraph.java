@@ -2,7 +2,10 @@ package org.example;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
@@ -10,6 +13,9 @@ import static java.lang.Integer.min;
 public class HyperGraph {
     private static final boolean LEFT = false;
     private static final boolean RIGHT = true;
+    public boolean add_to_beginning = false;
+    public boolean take_from_end = false;
+    public int score_mode = 0;
     private Map<Integer, Node> nodes = null;
     private ArrayList<HyperEdge> edges = null;
     private int num_of_nodes = 0;
@@ -19,6 +25,7 @@ public class HyperGraph {
     private Map<Node, Boolean> best_partition_in_steps = null; // with every step we make pass;
                                          // i.e. best_partition_in_steps is more global then best_partition_in_pass
     private float best_partition_in_steps_score;
+    // Вот тут можно ArrayList заменить на HashMap<Node, Node> где Node один и тот же в значении и в ключе
     private Map<Integer, ArrayList<Node>> left_gain_container = null; // key is gain
     private Map<Integer, ArrayList<Node>> right_gain_container = null;
     private float balance_score; // = min(left, right)/max(left, right) < 1
@@ -34,8 +41,14 @@ public class HyperGraph {
     }
 
     public void readFrom(String str){
+        long start, end;
+        start = System.currentTimeMillis();
         File file = new File(str);
+        if (!file.exists()){
+            System.err.println("Input file not found");
+        }
         Scanner sc = null;
+        System.out.println("Reading from file...\r");
         try {
             sc = new Scanner(file);
             sc.useDelimiter("\n");
@@ -57,6 +70,56 @@ public class HyperGraph {
                 edges.add(new_edge);
             }
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Initializing nodes...          \r");
+        this.nodes.entrySet().parallelStream().forEach((e) -> {
+            Node node = e.getValue();
+            for (HyperEdge edge: this.edges) {
+                if (edge.contains(node)){
+                    node.incident_nodes.addAll(edge.getNodes());
+                    node.incident_edges.add(edge);
+                    }
+                }
+//            System.gc();
+            });
+        end = System.currentTimeMillis();
+        System.out.println("Reading done in " + (float)(end-start)/1000 + "s                 ");
+//        this.nodes.forEach((k, node) -> {
+//            for (HyperEdge edge: this.edges) {
+//                if (edge.contains(node)){
+//                    node.incident_nodes.addAll(edge.getNodes());
+//                    node.incident_edges.add(edge);
+//                }
+//            }
+//        });
+
+
+    }
+
+    public void wright_to(String str){
+        File output = new File(str);
+        try {
+            if(output.createNewFile()){
+                System.out.println("Output file created");
+            } else {
+                System.out.println("Overwriting existing file");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        FileWriter output_writer;
+        try {
+            output_writer = new FileWriter(str);
+            for(int i = 1; i <= this.num_of_nodes; i++){
+                if (this.nodes.get(i).getSide() == LEFT){
+                    output_writer.write("0\n");
+                } else {
+                    output_writer.write("1\n");
+                }
+            }
+            output_writer.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -103,6 +166,7 @@ public class HyperGraph {
         System.out.println("num_of_cuts: " + num_of_cuts);
         System.out.println("cut_cost: " + cut_cost);
         System.out.println("partition_score: " + partition_score);
+        System.out.println("==================================================");
     }
 
     public void print_partition_info(){
@@ -117,20 +181,19 @@ public class HyperGraph {
     private void FM_pass(){
         this.save_pass_partition();
         this.best_partition_in_pass_score = this.get_partition_score_lite();
+        ArrayList<Node> changes = new ArrayList<>();
         while (!left_gain_container.isEmpty() && !right_gain_container.isEmpty()){
             Node best_move = get_node_for_best_move();
             this.num_of_cuts -= best_move.gain;
             this.move(best_move);
             best_move.lock();
             recompute_gains_for_incident(best_move);
-//            for (Node n: incident_nodes) {
-//                this.remove_node_from_containers(n);
-//                this.containers_add(n);
-//            }
+            changes.add(best_move);
             this.get_partition_score_lite();
-            if (this.partition_score > this.best_partition_in_pass_score){
+            if (this.partition_score > this.best_partition_in_pass_score){ // нужно переделать - Done!
+                // все изменения заносить в лист, а потом, при улучшении скора, их сохранять
                 this.best_partition_in_pass_score = this.partition_score;
-                this.save_pass_partition();
+                this.renew_pass_partition(changes);
             }
         }
         this.restore_partition(this.best_partition_in_pass);
@@ -166,7 +229,14 @@ public class HyperGraph {
     }
 
     private Node get_node_from_container(Integer gain, Map<Integer, ArrayList<Node>> container){
-        Node res = container.get(gain).get(0);
+        Node res;
+        if (this.take_from_end){
+            ArrayList<Node> list = container.get(gain);
+            int i = list.size()-1;
+            res = list.get(i);
+        } else {
+            res = container.get(gain).get(0);
+        }
         container.get(gain).remove(res);
         if (container.get(gain).isEmpty()){
             container.remove(gain);
@@ -178,12 +248,6 @@ public class HyperGraph {
         if (node.isNotLocked()) {
             Map<Integer, ArrayList<Node>> container;
             container = (node.getSide() == LEFT) ? left_gain_container : right_gain_container;
-            if (container == null) {
-                System.out.println();
-            }
-            if (container.get(node.gain) == null) {
-                System.out.println();
-            }
             container.get(node.gain).remove(node);
             if (container.get(node.gain).isEmpty()) {
                 container.remove(node.gain);
@@ -203,33 +267,26 @@ public class HyperGraph {
     }
 
     private void recompute_gains_for_incident(Node node){
-        //Set<Node> incident_nodes = new HashSet<>();
-        for (HyperEdge edge: this.edges) {
-            if (edge.contains(node)){
-                for (Node n: edge.getNodes()) {
-                    if (!n.equals(node) && n.isNotLocked()) {
-                        this.remove_node_from_containers(n);
-                        compute_gain(n);
-                        this.containers_add(n);
-                        //incident_nodes.add(n);
-                    }
-                }
+
+        for (Node n : node.incident_nodes) {
+            if (n.isNotLocked()) {
+                this.remove_node_from_containers(n);
+                compute_gain(n);
+                this.containers_add(n);
             }
         }
     }
 
     private void compute_gain(Node node){
         node.gain=0;
-        for (HyperEdge edge: this.edges) {
-            if (edge.contains(node)){
+        node.incident_edges.forEach((edge) -> {
                 if (edge.all_nodes_on_one_side_with(node)){
                     node.gain--;
                 }
                 if (edge.all_nodes_on_the_other_side_of(node)){
                     node.gain++;
                 }
-            }
-        }
+            });
     }
 
     void containers_add(Node node){
@@ -238,19 +295,56 @@ public class HyperGraph {
             if (!left_gain_container.containsKey(gain)) {
                 left_gain_container.put(gain, new ArrayList<>());
             }
-            left_gain_container.get(gain).add(node);
+            if(this.add_to_beginning){
+                left_gain_container.get(gain).add(0, node);
+            } else {
+                left_gain_container.get(gain).add(node);
+            }
         } else {
             if (!right_gain_container.containsKey(gain)) {
                 right_gain_container.put(gain, new ArrayList<>());
             }
-            right_gain_container.get(gain).add(node);
+            if(this.add_to_beginning){
+                right_gain_container.get(gain).add(0, node);
+            } else {
+                right_gain_container.get(gain).add(node);
+            }
         }
     }
 
     public float get_partition_score_lite(){
-        this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
-        this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
-        this.partition_score = this.balance_score/this.cut_cost;
+        switch (this.score_mode){
+            case 0:
+                this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
+                this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
+                this.partition_score = this.balance_score/this.cut_cost;
+                break;
+            case 1:
+                this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
+                this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
+                this.partition_score = this.balance_score - this.cut_cost;
+                break;
+            case 3:
+                this.balance_score = (float) lefts * (float) rights;
+                this.cut_cost = (float) this.num_of_cuts;
+                this.partition_score = this.balance_score - this.cut_cost;
+                break;
+            case 4: // without balance score
+                this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
+                this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
+                this.partition_score = 1/this.cut_cost;
+                break;
+            case 5:
+                this.balance_score = (float) lefts * (float) rights / ((float)this.num_of_nodes * (float)this.num_of_nodes/4);
+                this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
+                this.partition_score = this.balance_score - this.cut_cost;
+                break;
+            default:
+                System.err.println("Unrecognized balance score mode");
+                System.exit(-1);
+        }
+
+
         return this.partition_score;
     }
 
@@ -268,14 +362,6 @@ public class HyperGraph {
 
         this.nodes.forEach((k, v) -> this.left_right_counter(v));
 
-//        for(int i=1; i <= this.num_of_nodes; i++){
-//            if (this.nodes.get(i).getSide() == LEFT){
-//                lefts++;
-//            } else {
-//                rights++;
-//            }
-//        }
-
         this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
         this.num_of_cuts=0;
         for (HyperEdge edge: edges) {
@@ -292,10 +378,7 @@ public class HyperGraph {
                 }
             }
         }
-
-        this.cut_cost = (float) num_of_cuts * 2 / (float) this.num_of_hyperEdges;
-        this.partition_score = this.balance_score/this.cut_cost;
-        return this.partition_score;
+        return this.get_partition_score_lite();
     }
 
     float getBalance_score(){
@@ -311,6 +394,10 @@ public class HyperGraph {
         nodes.forEach((k, v) -> v.setSide(r.nextBoolean()));
     }
 
+    public void all_to_the_left_partition(){
+        nodes.forEach((k, v) -> v.moveLeft());
+    }
+
     public void oneLeftOneRight_partition(){
         for (int i=1; i <= this.num_of_nodes; i++){
             nodes.get(i).setSide((i%2)==0);
@@ -319,18 +406,34 @@ public class HyperGraph {
 
     private void save_step_partition(){
         if (best_partition_in_steps == null){
-            best_partition_in_steps = new HashMap<>();
+            best_partition_in_steps = new ConcurrentHashMap<>();
         }
+//        nodes.forEach((k, v) -> best_partition_in_steps.put(v, v.getSide()));
+
         nodes.forEach((k, v) -> best_partition_in_steps.put(v, v.getSide()));
+
         best_partition_in_steps_score = get_partition_score();
     }
 
     private void save_pass_partition(){
         if (best_partition_in_pass == null){
-            best_partition_in_pass = new HashMap<>();
+            best_partition_in_pass = new ConcurrentHashMap<>();
         }
+//        nodes.forEach((k, v) -> best_partition_in_pass.put(v, v.getSide()));
+
         nodes.forEach((k, v) -> best_partition_in_pass.put(v, v.getSide()));
-        best_partition_in_pass_score = get_partition_score();
+
+        best_partition_in_pass_score = get_partition_score_lite();
+    }
+
+    private void renew_pass_partition(ArrayList<Node> changes){
+        if (best_partition_in_pass == null){
+            System.err.println("best_partition_in_pass is not initialized!");
+            System.exit(-1);
+        }
+        changes.forEach((node) -> best_partition_in_pass.put(node, node.getSide()));
+        changes.clear();
+        best_partition_in_pass_score = get_partition_score_lite();
     }
 
     private void restore_partition(Map<Node, Boolean> partition){
