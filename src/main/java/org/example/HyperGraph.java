@@ -15,6 +15,7 @@ public class HyperGraph {
     private static final boolean RIGHT = true;
     public boolean add_to_beginning = false;
     public boolean take_from_end = false;
+    public boolean silent_mode = false;
     public int score_mode = 0;
     private Map<Integer, Node> nodes = null;
     private ArrayList<HyperEdge> edges = null;
@@ -29,7 +30,7 @@ public class HyperGraph {
     private Map<Integer, ArrayList<Node>> left_gain_container = null; // key is gain
     private Map<Integer, ArrayList<Node>> right_gain_container = null;
     private float balance_score; // = min(left, right)/max(left, right) < 1
-    private int num_of_cuts;
+    public int num_of_cuts;
     private float cut_cost; // = num of edges with nodes on both sides * 2 / num of edges
     private float partition_score; // = balance_score/cut_cost
     public int lefts;
@@ -48,7 +49,9 @@ public class HyperGraph {
             System.err.println("Input file not found");
         }
         Scanner sc = null;
-        System.out.println("Reading from file...\r");
+        if(!silent_mode) {
+            System.out.println("Reading from file...\r");
+        }
         try {
             sc = new Scanner(file);
             sc.useDelimiter("\n");
@@ -72,7 +75,9 @@ public class HyperGraph {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        System.out.println("Initializing nodes...          \r");
+        if(!silent_mode) {
+            System.out.println("Initializing nodes...          \r");
+        }
         this.nodes.entrySet().parallelStream().forEach((e) -> {
             Node node = e.getValue();
             for (HyperEdge edge: this.edges) {
@@ -84,7 +89,9 @@ public class HyperGraph {
 //            System.gc();
             });
         end = System.currentTimeMillis();
-        System.out.println("Reading done in " + (float)(end-start)/1000 + "s                 ");
+        if(!silent_mode) {
+            System.out.println("Reading done in " + (float) (end - start) / 1000 + "s                 ");
+        }
 //        this.nodes.forEach((k, node) -> {
 //            for (HyperEdge edge: this.edges) {
 //                if (edge.contains(node)){
@@ -139,8 +146,8 @@ public class HyperGraph {
     }
 
     public void FM_with_gain_containers(){
-        best_partition_in_steps_score = 0;
-        best_partition_in_pass_score = 0;
+        best_partition_in_steps_score = Integer.MIN_VALUE;
+        best_partition_in_pass_score = Integer.MIN_VALUE;
         int iter = 0;
         long start, end;
         do {
@@ -152,21 +159,25 @@ public class HyperGraph {
             this.FM_pass();
             this.unlockAllNodes();
             end = System.currentTimeMillis();
-            System.out.println("=================== Pass  gone ===================");
-            System.out.println("iter " + iter + " took " + (float)(end-start)/1000 + "s");
+            if(!silent_mode) {
+                System.out.println("=================== Pass  gone ===================");
+                System.out.println("iter " + iter + " took " + (float) (end - start) / 1000 + "s");
+                System.out.println("balance_score: " + balance_score);
+                System.out.println("num_of_cuts: " + num_of_cuts);
+                System.out.println("cut_cost: " + cut_cost);
+                System.out.println("partition_score: " + partition_score);
+            }
+        } while (best_partition_in_pass_score > best_partition_in_steps_score);
+        this.restore_partition(this.best_partition_in_steps);
+        this.get_partition_score();
+        if(!silent_mode) {
+            System.out.println("================== !!! DONE !!! ==================");
             System.out.println("balance_score: " + balance_score);
             System.out.println("num_of_cuts: " + num_of_cuts);
             System.out.println("cut_cost: " + cut_cost);
             System.out.println("partition_score: " + partition_score);
-        } while (best_partition_in_pass_score > best_partition_in_steps_score);
-        this.restore_partition(this.best_partition_in_steps);
-        this.get_partition_score();
-        System.out.println("================== !!! DONE !!! ==================");
-        System.out.println("balance_score: " + balance_score);
-        System.out.println("num_of_cuts: " + num_of_cuts);
-        System.out.println("cut_cost: " + cut_cost);
-        System.out.println("partition_score: " + partition_score);
-        System.out.println("==================================================");
+            System.out.println("==================================================");
+        }
     }
 
     public void print_partition_info(){
@@ -324,17 +335,17 @@ public class HyperGraph {
                 this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
                 this.partition_score = this.balance_score - this.cut_cost;
                 break;
-            case 3:
+            case 2:
                 this.balance_score = (float) lefts * (float) rights;
                 this.cut_cost = (float) this.num_of_cuts;
                 this.partition_score = this.balance_score - this.cut_cost;
                 break;
-            case 4: // without balance score
+            case 3: // without balance score
                 this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
                 this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
                 this.partition_score = 1/this.cut_cost;
                 break;
-            case 5:
+            case 4:
                 this.balance_score = (float) lefts * (float) rights / ((float)this.num_of_nodes * (float)this.num_of_nodes/4);
                 this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
                 this.partition_score = this.balance_score - this.cut_cost;

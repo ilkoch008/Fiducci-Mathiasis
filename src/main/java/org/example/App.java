@@ -1,5 +1,9 @@
 package org.example;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 /**
  * Hello world!
  *
@@ -31,10 +35,13 @@ public class App
                 case "-b":
                     i++;
                     graph.score_mode = Integer.parseInt(args[i]);
-                    if(graph.score_mode < 0 || graph.score_mode > 5){
-                        System.err.println("Unrecognized balance score mode");
+                    if(graph.score_mode < 0 || graph.score_mode > 4){
+                        System.err.println("Unrecognized score mode");
                         System.exit(-1);
                     }
+                    break;
+                case "-s":
+                    graph.silent_mode = true;
                     break;
                 default:
                     System.err.println("Unrecognized flag " + args[i]);
@@ -45,7 +52,44 @@ public class App
             System.exit(-1);
         }
         graph.readFrom(input_file);
-        graph.all_to_the_left_partition();
+
+//        File output = new File("balance_modes_log1.txt");
+//        try {
+//            if(output.createNewFile()){
+//                System.out.println("Output file created");
+//            } else {
+//                System.out.println("Overwriting existing file");
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        FileWriter output_writer;
+//        long start, end;
+//        try {
+//            output_writer = new FileWriter("balance_modes_log1.txt");
+//            for(int i = 2; i <= 4; i++){
+//                graph.score_mode = i;
+//                output_writer.write("score mode " + i + " ====================================\n");
+//                System.out.print("score mode " + i + " ====================================\n");
+//                for (int j = 0; j < 100; j++){
+//                    graph.random_partition();
+//                    graph.get_partition_score();
+//                    output_writer.write(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; ");
+//                    System.out.print(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; ");
+//                    start = System.currentTimeMillis();
+//                    graph.FM_with_gain_containers();
+//                    end = System.currentTimeMillis();
+//                    output_writer.write(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; " + (end-start) + "\n");
+//                    System.out.print(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; " + (end-start) + "\n");
+//                }
+//            }
+//            output_writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
+        graph.random_partition();
         graph.print_partition_info();
         graph.FM_with_gain_containers();
         graph.wright_to(output_file);
