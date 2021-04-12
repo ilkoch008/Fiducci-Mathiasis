@@ -85,7 +85,7 @@ public void FM_with_gain_containers(){
 
 Container structure:
 ```java
-private Map<Integer, ArrayList<Node>> left_gain_container;
+private Map<Integer, ArrayList<Node>> gain_container;
 ```
 Where key value is the change in number of cuts after changing side of node (nodes are stored in ArrayList).
 
@@ -123,3 +123,22 @@ Here you can see final flame graph:
 ![](https://raw.githubusercontent.com/ilkoch008/Fiducci-Mathiasis/master/misc/flamegraph.png)
 
 ## Experiments
+
+You can see all of measurements [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/misc/results.xlsx) or in log files.
+
+### 1. Different Types of Scoring
+
+All computations was done with ```ISPD98_ibm05.hgr```. 100 measurements for each type of scoring.
+
+In this table you can see average measured values.
+
+|score mode|num of cuts before|min(lefts,rights) |	max(lefts,rights) |	num of cuts after |	min(lefts,rights) | max(lefts,rights) |	time(ms)|
+|----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
+|0         |18900             |14606             |14741              |6136               |14673              |14674              |12518    |
+|1         |18896             |14603             |14744              |6144               |14673              |14674              |12518    |
+|2         |18908             |14599             |14748              |6164               |14671              |14675              |5619     |
+|3         |18893             |14605             |14742              |6155               |14630              |14716              |11032    |
+|4         |18911             |14607             |14740              |6067               |14671              |14675              |12070    |
+
+We can see here that score mode 2 is faster then others. This is because this score has only one multiplication and one sum inside.
+
