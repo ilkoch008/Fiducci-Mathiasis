@@ -11,6 +11,23 @@ Implementation of Fiducci-Mathiasis algorithm of hypergraph partitioning.
 
 ```-tfe``` - with this flag best node to move will come from the end of the list.
 
+```-egcm``` - this flag regulates choosing of best move in case of equal best gains in left and in right gain-containers. By default, 
+the node from the more numerous side is taken. With this flag, only the number of elements of the container with the best gain is counted:
+
+```java
+if (equal_gain_choose_mode) {
+                int left_k_g_size = this.left_gain_container.get(best_gain).size();
+                int right_k_g_size = this.right_gain_container.get(best_gain).size();
+                if (left_k_g_size > right_k_g_size) {
+                    res = get_node_from_container(best_gain_from_left, left_gain_container);
+                } else {
+                    res = get_node_from_container(best_gain_from_right, right_gain_container);
+                }
+            }
+```
+
+```-sgc``` - with this flag will be used only one gain container. ```-egcm``` flag will have no effect.
+
 ```-b N``` - sets the mode of scoring the partition.
  
 ```N = 0```:
