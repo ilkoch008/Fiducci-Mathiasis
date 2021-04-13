@@ -43,6 +43,12 @@ public class App
                 case "-s":
                     graph.silent_mode = true;
                     break;
+                case "-egcm":
+                    graph.equal_gain_choose_mode = true;
+                    break;
+                case "-sgc":
+                    graph.single_gain_container = true;
+                    break;
                 default:
                     System.err.println("Unrecognized flag " + args[i]);
             }
@@ -51,71 +57,21 @@ public class App
             System.err.println("input file is not given");
             System.exit(-1);
         }
+
         graph.readFrom(input_file);
 
-        File output = new File("balance_modes_log2.txt");
-        try {
-            if(output.createNewFile()){
-                System.out.println("Output file created");
-            } else {
-                System.out.println("Overwriting existing file");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        FileWriter output_writer;
-        long start, end;
-        try {
-            output_writer = new FileWriter("balance_modes_log2.txt");
-            for(int i = 0; i <= 3; i++){
-                switch (i){
-                    case 0:
-                        graph.take_from_end = false;
-                        graph.add_to_beginning = false;
-                        output_writer.write("default mode ====================================\n");
-                        System.out.print("default mode ====================================\n");
-                        break;
-                    case 1:
-                        graph.take_from_end = true;
-                        graph.add_to_beginning = false;
-                        output_writer.write("mode -tfe ====================================\n");
-                        System.out.print("mode -tfe ====================================\n");
-                        break;
-                    case 2:
-                        graph.take_from_end = false;
-                        graph.add_to_beginning = true;
-                        output_writer.write("mode -atb ====================================\n");
-                        System.out.print("mode -atb ====================================\n");
-                        break;
-                    case 3:
-                        graph.take_from_end = true;
-                        graph.add_to_beginning = true;
-                        output_writer.write("mode -tfe -atb ====================================\n");
-                        System.out.print("mode -tfe -atb ====================================\n");
-                        break;
-                }
-
-                for (int j = 0; j < 100; j++){
-                    graph.random_partition();
-                    graph.get_partition_score();
-                    output_writer.write(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; ");
-                    System.out.print(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; ");
-                    start = System.currentTimeMillis();
-                    graph.FM_with_gain_containers();
-                    end = System.currentTimeMillis();
-                    output_writer.write(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; " + (end-start) + "\n");
-                    System.out.print(graph.num_of_cuts + "; " + graph.lefts + "; " + graph.rights + "; " + (end-start) + "\n");
-                }
-            }
-            output_writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+//        GraphTester tester = new GraphTester();
+//        tester.graph = graph;
+//        tester.test_1c = true;
+//        tester.output_file = "score_modes_1c_log.txt";
+//        tester.run_score_modes();
+//        tester.output_file = "cont_logic_1c_log.txt";
+//        tester.run_containers_logic();
         graph.random_partition();
         graph.print_partition_info();
-        graph.FM_with_gain_containers();
+        graph.FM();
         graph.wright_to(output_file);
+        graph.loadPartitionFrom(output_file);
+        graph.print_partition_info();
     }
 }
