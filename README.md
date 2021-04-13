@@ -28,6 +28,8 @@ if (equal_gain_choose_mode) {
 
 ```-sgc``` - with this flag will be used only one gain container. ```-egcm``` flag will have no effect.
 
+```-bw x``` - sets balance weight (x is float). By default x = 1.
+
 ```-b N``` - sets the mode of scoring the partition.
  
 ```N = 0```:
@@ -35,7 +37,7 @@ if (equal_gain_choose_mode) {
 ```
 balance_score = min(lefts, rights) / max(lefts, rights))
 cut_cost = num_of_cuts * 2 / num_of_hyperEdges
-partition_score = balance_score / cut_cost
+partition_score = balance_score^balance_weight / cut_cost
 ```
 
 ```N = 1```:
@@ -43,7 +45,7 @@ partition_score = balance_score / cut_cost
 ```
 balance_score = min(lefts, rights) / max(lefts, rights))
 cut_cost = num_of_cuts * 2 / num_of_hyperEdges
-partition_score = balance_score - cut_cost
+partition_score = balance_score*balance_weight - cut_cost
 ```
 
 ```N = 2```:
@@ -51,7 +53,7 @@ partition_score = balance_score - cut_cost
 ```
 balance_score = lefts * rights
 cut_cost = num_of_cuts
-partition_score = balance_score - cut_cost
+partition_score = balance_score*balance_weight - cut_cost
 ```
 
 ```N = 3```: this mode does not take into account the balancing of the partitioning.
@@ -67,7 +69,7 @@ partition_score = 1 / cut_cost
 ```
 balance_score = lefts * rights / (num_of_nodes * num_of_nodes)
 cut_cost = num_of_cuts * 2 / num_of_hyperEdges
-partition_score = balance_score - cut_cost
+partition_score = balance_score*balance_weight - cut_cost
 ```
  
 ```-s``` - turns on the silent mode.
@@ -158,4 +160,41 @@ In this table you can see average measured values.
 |4         |18911             |14607             |14740              |6067               |14671              |14675              |12070    |
 
 We can see here that score mode 2 is faster then others. This is because this score has only one multiplication and one sum inside.
+But mode 4 performs better so it will be used further.
+
+It can also be noted that due to the peculiarities of the work of the gain containers, 
+even in the case of a score that does not take into account the balance, everything is good with the balance.
+
+### 2. Gain container logics
+
+#### 2.1 Different types of adding/popping items in gain container
+
+|flags     |num of cuts before|min(lefts,rights) |max(lefts,rights)  |num of cuts after  |	min(lefts,rights)|max(lefts,rights)  |time(ms) |
+|----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
+|default   |18904             |14606             |14741              |6073               |14667              |14680              |13148    |
+|-tfe      |18906             |14598             |14749              |6585               |14671              |14675              |18002    |
+|-atb      |18908             |14602             |14745              |6640               |14672              |14675              |16458    |
+|-tfe -atb |18899             |14604             |14743              |6130               |14671              |14675              |14501    |
+
+We can see that all flags make partition quality worse. And also they take more time.
+
+#### 2.2 ```-egcm``` flag
+
+The same as previous one but with ```-egcm``` flag:
+
+|flags     |num of cuts before|min(lefts,rights) |max(lefts,rights)  |num of cuts after  |	min(lefts,rights)|max(lefts,rights)  |time(ms) |
+|----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
+|default   |18896             |14599             |14748              |5330               |13902              |15445              |6512     |
+|-tfe      |18899             |14609             |14738              |4170               |12882              |16465              |8681     |
+|-atb      |18907             |14604             |14743              |4135               |12991              |16355              |9893     |
+|-tfe -atb |18904             |14610             |14737              |5413               |13185              |16162              |6702     |
+
+Time of execution and number of cuts after execution have decreased greatly. In some particular cases
+number of cuts approaches to 2000 (you can check this [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/misc/results.xlsx)
+or in log files). But there is no anything good in balance.
+
+Let's try to fix it with score mode ```0```.
+
+#### 2.3 ```-egcm``` flag with ```0``` score mode
+
 
