@@ -1,5 +1,8 @@
 # Fiducci-Mathiasis
+
 Implementation of Fiducci-Mathiasis algorithm of hypergraph partitioning.
+
+You can find executable  ```.jar``` file [here](https://github.com/ilkoch008/Fiducci-Mathiasis/tree/master/out/artifacts/Fiducci_Mathiasis_jar).
 
 ## Flags
 
