@@ -257,3 +257,5 @@ But on the other hand, it is always possible to relax the balance requirements a
 until the necessary requirements for the number of cuts and for the balance are achieved. 
 Well, or you can come up with some heuristics to get the initial partition, 
 on which the Fiducci-Mathiasis algorithm will certainly show good results.
+
+And yes, my choose is ```-b 4 -egcm -tfe```.
