@@ -197,4 +197,49 @@ Let's try to fix it with score mode ```0```.
 
 #### 2.3 ```-egcm``` flag with ```0``` score mode
 
+|flags     |num of cuts before|min(lefts,rights) |max(lefts,rights)  |num of cuts after  |	min(lefts,rights)|max(lefts,rights)  |time(ms) |
+|----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
+|default   |18907             |14599             |14748              |7404               |14547              |14800              |5637     |
+|-tfe      |18905             |14611             |14736              |7213               |14578              |14769              |5772     |
+|-atb      |18902             |14612             |14735              |7493               |14563              |14783              |4627     |
+|-tfe -atb |18908             |14600             |14747              |7409               |14497              |14850              |5214     |
 
+Balance looks good. But number of cuts has increased a lot. Let's try to increase balance weight in ```4``` score mode.
+
+#### 2.3 ```-egcm``` flag with ```4``` score mode (balance weight x2)
+
+|flags     |num of cuts before|min(lefts,rights) |max(lefts,rights)  |num of cuts after  |	min(lefts,rights)|max(lefts,rights)  |time(ms) |
+|----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
+|default   |18905             |14608             |14739              |6006               |13710              |15637              |7311     |
+|-tfe      |18901             |14604             |14743              |4937               |13798              |15549              |10907    |
+|-atb      |18907             |14604             |14743              |5262               |13922              |15425              |10273    |
+|-tfe -atb |18911             |14612             |14734              |6073               |13863              |15484              |7158     |
+
+Partitioning became more balanced. But also number of cuts increased. So we need to decide what is more important for us:
+partition balance or cut size.
+
+### 3. Single gain container
+
+We can put all of nodes in one container. It may cause some disbalance but let's check it.
+
+#### 3.1 ```0``` score mode
+
+|flags     |num of cuts before|min(lefts,rights) |max(lefts,rights)  |num of cuts after  |	min(lefts,rights)|max(lefts,rights)  |time(ms) |
+|----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
+|default   |18913             |14607             |14737              |6478               |14645              |14702              |14954    |
+|-tfe      |18915             |14600             |14747              |6584               |14667              |14769              |17731    |
+|-atb      |18904             |14600             |14747              |6589               |14672              |14675              |17060    |
+|-tfe -atb |18904             |14610             |14737              |6521               |14644              |14703              |16066    |
+
+Execution began to take significantly longer. Also, you can notice an almost complete indifference to the flags of the gain container.
+
+#### 3.2 ```4``` score mode
+
+|flags     |num of cuts before|min(lefts,rights) |max(lefts,rights)  |num of cuts after  |	min(lefts,rights)|max(lefts,rights)  |time(ms) |
+|----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
+|default   |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
+|-tfe      |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
+|-atb      |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
+|-tfe -atb |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
+
+This one turned to be the slowest one.
