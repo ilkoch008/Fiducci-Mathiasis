@@ -130,10 +130,6 @@ public class HyperGraph {
     }
 
     public void wright_to(String str){
-        if (str == null){
-            System.err.println("Output file name wasn't given. Partition won't be saved.");
-            return;
-        }
         File output = new File(str);
         try {
             if(output.createNewFile()){
