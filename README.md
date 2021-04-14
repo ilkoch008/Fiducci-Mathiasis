@@ -237,9 +237,23 @@ Execution began to take significantly longer. Also, you can notice an almost com
 
 |flags     |num of cuts before|min(lefts,rights) |max(lefts,rights)  |num of cuts after  |	min(lefts,rights)|max(lefts,rights)  |time(ms) |
 |----------|-----------------:|-----------------:|------------------:|------------------:|------------------:|------------------:|---------|
-|default   |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
-|-tfe      |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
-|-atb      |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
-|-tfe -atb |00000             |00000             |00000              |0000               |00000              |00000              |00000    |
+|default   |18901             |14608             |14739              |6077               |13274              |16073              |22235    |
+|-tfe      |18906             |14610             |14737              |6230               |13662              |15685              |31421    |
+|-atb      |18914             |14601             |14746              |6286               |13556              |15791              |28056    |
+|-tfe -atb |18907             |14613             |14734              |5981               |13173              |16174              |22763    |
 
-This one turned to be the slowest one.
+This one turned out to be the slowest one.
+
+There are quite expected problems with the balance of the partition. 
+However, these problems are slightly less widespread than in p.2.2, even though 2 gain containers were used there.
+
+## Conclusion
+
+The considered algorithm is extremely unstable. A lot depends on ~~weather, wind direction and your mood~~ the initial partitioning. 
+There is also a direct correlation between the balance of the partition and the number of cuts: 
+the stricter the conditions for balance, the more cuts in the final partition 
+(perhaps there really is some relationship between them, this issue needs to be investigated separately). 
+But on the other hand, it is always possible to relax the balance requirements and apply the algorithm on a random partition 
+until the necessary requirements for the number of cuts and for the balance are achieved. 
+Well, or you can come up with some heuristics to get the initial partition, 
+on which the Fiducci-Mathiasis algorithm will certainly show good results.
