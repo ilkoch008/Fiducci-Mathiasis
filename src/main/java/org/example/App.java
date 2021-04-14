@@ -1,9 +1,5 @@
 package org.example;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
 /**
  * Hello world!
  *
@@ -49,6 +45,10 @@ public class App
                 case "-sgc":
                     graph.single_gain_container = true;
                     break;
+                case "-bw":
+                    i++;
+                    graph.balance_weight = Float.parseFloat(args[i]);
+                    break;
                 default:
                     System.err.println("Unrecognized flag " + args[i]);
             }
@@ -62,16 +62,19 @@ public class App
 
 //        GraphTester tester = new GraphTester();
 //        tester.graph = graph;
-//        tester.test_1c = true;
-//        tester.output_file = "score_modes_1c_log.txt";
-//        tester.run_score_modes();
-//        tester.output_file = "cont_logic_1c_log.txt";
+//        tester.output_file = "cont_logic_2c_egcm_sc_mode_4_b_weight_x2_log.txt";
 //        tester.run_containers_logic();
+
+//        graph.single_gain_container = true;
+//        tester.output_file = "cont_logic_single_gc_sc_mode_4.txt";
+//        tester.run_containers_logic();
+
         graph.random_partition();
         graph.print_partition_info();
         graph.FM();
         graph.wright_to(output_file);
-        graph.loadPartitionFrom(output_file);
-        graph.print_partition_info();
+
+//        graph.loadPartitionFrom(output_file);
+//        graph.print_partition_info();
     }
 }

@@ -19,6 +19,7 @@ public class HyperGraph {
     public boolean equal_gain_choose_mode = false;
     public boolean single_gain_container = false;
     public int score_mode = 0;
+    public float balance_weight = 1;
     private Map<Integer, Node> nodes = null;
     private ArrayList<HyperEdge> edges = null;
     private int num_of_nodes = 0;
@@ -28,7 +29,6 @@ public class HyperGraph {
     private Map<Node, Boolean> best_partition_in_steps = null; // with every step we make pass;
                                          // i.e. best_partition_in_steps is more global then best_partition_in_pass
     private float best_partition_in_steps_score;
-    // Вот тут можно ArrayList заменить на HashMap<Node, Node> где Node один и тот же в значении и в ключе
     private Map<Integer, ArrayList<Node>> left_gain_container = null; // key is gain
     private Map<Integer, ArrayList<Node>> right_gain_container = null;
     private Map<Integer, ArrayList<Node>> gain_container = null;
@@ -130,6 +130,10 @@ public class HyperGraph {
     }
 
     public void wright_to(String str){
+        if (str == null){
+            System.err.println("Output file name wasn't given. Partition won't be saved.");
+            return;
+        }
         File output = new File(str);
         try {
             if(output.createNewFile()){
@@ -470,17 +474,17 @@ public class HyperGraph {
             case 0:
                 this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
                 this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
-                this.partition_score = this.balance_score/this.cut_cost;
+                this.partition_score = (float) Math.pow(this.balance_score, this.balance_weight)/this.cut_cost;
                 break;
             case 1:
                 this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
                 this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
-                this.partition_score = this.balance_score - this.cut_cost;
+                this.partition_score = this.balance_score * this.balance_weight - this.cut_cost;
                 break;
             case 2:
                 this.balance_score = (float) lefts * (float) rights;
                 this.cut_cost = (float) this.num_of_cuts;
-                this.partition_score = this.balance_score - this.cut_cost;
+                this.partition_score = this.balance_score * this.balance_weight - this.cut_cost;
                 break;
             case 3: // without balance score
                 this.balance_score = ((float) min(lefts, rights))/((float) max(lefts, rights));
@@ -490,7 +494,7 @@ public class HyperGraph {
             case 4:
                 this.balance_score = (float) lefts * (float) rights / ((float)this.num_of_nodes * (float)this.num_of_nodes/4);
                 this.cut_cost = (float) this.num_of_cuts * 2 / (float) this.num_of_hyperEdges;
-                this.partition_score = this.balance_score - this.cut_cost;
+                this.partition_score = this.balance_score * this.balance_weight - this.cut_cost;
                 break;
             default:
                 System.err.println("Unrecognized balance score mode");
