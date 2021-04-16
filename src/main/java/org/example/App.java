@@ -1,5 +1,8 @@
 package org.example;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Hello world!
  *
@@ -16,7 +19,9 @@ public class App
                 case "-i":
                     i++;
                     input_file = args[i];
-                    output_file = input_file + ".part.2";
+                    if (output_file == null) {
+                        output_file = input_file + ".part.2";
+                    }
                     break;
                 case "-o":
                     i++;
@@ -50,7 +55,17 @@ public class App
                     graph.balance_weight = Float.parseFloat(args[i]);
                     break;
                 default:
-                    System.err.println("Unrecognized flag " + args[i]);
+                    Pattern graph_name = Pattern.compile("^.*\\.hgr");
+                    Matcher m = graph_name.matcher(args[i]);
+                    if (m.matches()){
+                        input_file = args[i];
+                        if (output_file == null) {
+                            output_file = input_file + ".part.2";
+                        }
+                    } else {
+                        System.err.println("Unrecognized flag " + args[i]);
+                        System.exit(-1);
+                    }
             }
         }
         if (input_file == null){

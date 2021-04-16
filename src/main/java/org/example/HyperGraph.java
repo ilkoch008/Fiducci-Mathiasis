@@ -38,9 +38,11 @@ public class HyperGraph {
     private float partition_score; // = balance_score/cut_cost
     public int lefts;
     public int rights;
+    private HashSet<Node> nodes_recomputing;
 
     private void init(){
         nodes = new HashMap<>();
+        nodes_recomputing = new HashSet<>();
         edges = new ArrayList<>();
     }
 
@@ -73,12 +75,11 @@ public class HyperGraph {
         if (!file.exists()){
             System.err.println("Input file not found");
         }
-        Scanner sc = null;
         if(!silent_mode) {
             System.out.println("Reading from file...\r");
         }
         try {
-            sc = new Scanner(file);
+            Scanner sc = new Scanner(file);
             sc.useDelimiter("\n");
             Scanner line_sc = new Scanner(sc.next());
             this.num_of_hyperEdges = line_sc.nextInt();
@@ -107,39 +108,18 @@ public class HyperGraph {
             Node node = e.getValue();
             for (HyperEdge edge: this.edges) {
                 if (edge.contains(node)){
-                    node.incident_nodes.addAll(edge.getNodes());
                     node.incident_edges.add(edge);
                     }
                 }
-//            System.gc();
             });
         end = System.currentTimeMillis();
         if(!silent_mode) {
             System.out.println("Reading done in " + (float) (end - start) / 1000 + "s                 ");
         }
-//        this.nodes.forEach((k, node) -> {
-//            for (HyperEdge edge: this.edges) {
-//                if (edge.contains(node)){
-//                    node.incident_nodes.addAll(edge.getNodes());
-//                    node.incident_edges.add(edge);
-//                }
-//            }
-//        });
-
-
     }
 
     public void wright_to(String str){
-        File output = new File(str);
-        try {
-            if(output.createNewFile()){
-                System.out.println("Output file created");
-            } else {
-                System.out.println("Overwriting existing file");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        create_file(str);
         FileWriter output_writer;
         try {
             output_writer = new FileWriter(str);
@@ -155,6 +135,19 @@ public class HyperGraph {
             e.printStackTrace();
         }
 
+    }
+
+    static void create_file(String str) {
+        File output = new File(str);
+        try {
+            if(output.createNewFile()){
+                System.out.println("Output file created");
+            } else {
+                System.out.println("Overwriting existing file");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Map<Integer, Node> getNodes() {
@@ -182,7 +175,7 @@ public class HyperGraph {
         best_partition_in_steps_score = Integer.MIN_VALUE;
         best_partition_in_pass_score = Integer.MIN_VALUE;
         int iter = 0;
-        long start, end;
+        long start;
         do {
             iter++;
             best_partition_in_steps_score = best_partition_in_pass_score;
@@ -190,17 +183,12 @@ public class HyperGraph {
             this.save_step_partition();
             this.init_containers();
             this.FM_pass_2c();
-            this.unlockAllNodes();
-            end = System.currentTimeMillis();
-            if(!silent_mode) {
-                System.out.println("=================== Pass  gone ===================");
-                System.out.println("iter " + iter + " took " + (float) (end - start) / 1000 + "s");
-                System.out.println("balance_score: " + balance_score);
-                System.out.println("num_of_cuts: " + num_of_cuts);
-                System.out.println("cut_cost: " + cut_cost);
-                System.out.println("partition_score: " + partition_score);
-            }
+            print_afterPass(iter, start);
         } while (best_partition_in_pass_score > best_partition_in_steps_score);
+        print_done();
+    }
+
+    private void print_done() {
         this.restore_partition(this.best_partition_in_steps);
         this.get_partition_score();
         if(!silent_mode) {
@@ -213,11 +201,25 @@ public class HyperGraph {
         }
     }
 
+    private void print_afterPass(int iter, long start) {
+        long end;
+        this.unlockAllNodes();
+        end = System.currentTimeMillis();
+        if(!silent_mode) {
+            System.out.println("=================== Pass  gone ===================");
+            System.out.println("iter " + iter + " took " + (float) (end - start) / 1000 + "s");
+            System.out.println("balance_score: " + balance_score);
+            System.out.println("num_of_cuts: " + num_of_cuts);
+            System.out.println("cut_cost: " + cut_cost);
+            System.out.println("partition_score: " + partition_score);
+        }
+    }
+
     private void FM_with_one_gain_container(){
         best_partition_in_steps_score = Integer.MIN_VALUE;
         best_partition_in_pass_score = Integer.MIN_VALUE;
         int iter = 0;
-        long start, end;
+        long start;
         do {
             iter++;
             best_partition_in_steps_score = best_partition_in_pass_score;
@@ -225,27 +227,9 @@ public class HyperGraph {
             this.save_step_partition();
             this.init_container();
             this.FM_pass_1c();
-            this.unlockAllNodes();
-            end = System.currentTimeMillis();
-            if(!silent_mode) {
-                System.out.println("=================== Pass  gone ===================");
-                System.out.println("iter " + iter + " took " + (float) (end - start) / 1000 + "s");
-                System.out.println("balance_score: " + balance_score);
-                System.out.println("num_of_cuts: " + num_of_cuts);
-                System.out.println("cut_cost: " + cut_cost);
-                System.out.println("partition_score: " + partition_score);
-            }
+            print_afterPass(iter, start);
         } while (best_partition_in_pass_score > best_partition_in_steps_score);
-        this.restore_partition(this.best_partition_in_steps);
-        this.get_partition_score();
-        if(!silent_mode) {
-            System.out.println("================== !!! DONE !!! ==================");
-            System.out.println("balance_score: " + balance_score);
-            System.out.println("num_of_cuts: " + num_of_cuts);
-            System.out.println("cut_cost: " + cut_cost);
-            System.out.println("partition_score: " + partition_score);
-            System.out.println("==================================================");
-        }
+        print_done();
     }
 
     public void print_partition_info(){
@@ -361,8 +345,9 @@ public class HyperGraph {
         if (node.isNotLocked()) {
             Map<Integer, ArrayList<Node>> container;
             container = (node.getSide() == LEFT) ? left_gain_container : right_gain_container;
-            container.get(node.gain).remove(node);
-            if (container.get(node.gain).isEmpty()) {
+            ArrayList<Node> nodeList = container.get(node.gain);
+            nodeList.remove(node);
+            if (nodeList.isEmpty()) {
                 container.remove(node.gain);
             }
         }
@@ -370,8 +355,9 @@ public class HyperGraph {
 
     private void remove_node_from_container(Node node) {
         if (node.isNotLocked()) {
-            this.gain_container.get(node.gain).remove(node);
-            if (this.gain_container.get(node.gain).isEmpty()) {
+            ArrayList<Node> nodeList = this.gain_container.get(node.gain);
+            nodeList.remove(node);
+            if (nodeList.isEmpty()) {
                 this.gain_container.remove(node.gain);
             }
         }
@@ -395,23 +381,59 @@ public class HyperGraph {
     }
 
     private void recompute_gains_for_incident_2c(Node node){
-
-        for (Node n : node.incident_nodes) {
-            if (n.isNotLocked()) {
+        check_neighbours(node);
+        for(Node n : this.nodes_recomputing){
+            if(n.changed_gain()){
                 this.remove_node_from_containers(n);
-                compute_gain(n);
+                n.gain = n.new_gain;
                 this.containers_add(n);
             }
         }
+        this.nodes_recomputing.clear();
     }
 
     private void recompute_gains_for_incident_1c(Node node){
 
-        for (Node n : node.incident_nodes) {
-            if (n.isNotLocked()) {
+        check_neighbours(node);
+        for(Node n : this.nodes_recomputing){
+            if(n.changed_gain()){
                 this.remove_node_from_container(n);
-                compute_gain(n);
+                n.gain = n.new_gain;
                 this.container_add(n);
+            }
+        }
+        this.nodes_recomputing.clear();
+    }
+
+    private void check_neighbours(Node node) {
+        for (HyperEdge e: node.incident_edges){
+            if(e.all_nodes_on_one_side_with(node)){
+                for (Node n : e.getNodes()){
+                    if (n.isNotLocked()){
+                        n.new_gain--;
+                        this.nodes_recomputing.add(n);
+                    }
+                }
+            }
+            if (e.all_nodes_on_the_other_side_of(node)){
+                for (Node n : e.getNodes()){
+                    if (n.isNotLocked()){
+                        n.new_gain++;
+                        this.nodes_recomputing.add(n);
+                    }
+                }
+            }
+            if (e.one_node_on_other_side_of(node)){
+                if (e.buffered_node.isNotLocked()) {
+                    e.buffered_node.new_gain++;
+                    this.nodes_recomputing.add(e.buffered_node);
+                }
+            }
+            if (e.one_node_on_one_side_with(node)){
+                if (e.buffered_node.isNotLocked()) {
+                    e.buffered_node.new_gain--;
+                    this.nodes_recomputing.add(e.buffered_node);
+                }
             }
         }
     }
@@ -425,6 +447,7 @@ public class HyperGraph {
                 if (edge.all_nodes_on_the_other_side_of(node)){
                     node.gain++;
                 }
+                node.new_gain = node.gain;
             });
     }
 
@@ -560,10 +583,7 @@ public class HyperGraph {
         if (best_partition_in_steps == null){
             best_partition_in_steps = new ConcurrentHashMap<>();
         }
-//        nodes.forEach((k, v) -> best_partition_in_steps.put(v, v.getSide()));
-
         nodes.forEach((k, v) -> best_partition_in_steps.put(v, v.getSide()));
-
         best_partition_in_steps_score = get_partition_score();
     }
 
@@ -571,10 +591,7 @@ public class HyperGraph {
         if (best_partition_in_pass == null){
             best_partition_in_pass = new ConcurrentHashMap<>();
         }
-//        nodes.forEach((k, v) -> best_partition_in_pass.put(v, v.getSide()));
-
         nodes.forEach((k, v) -> best_partition_in_pass.put(v, v.getSide()));
-
         best_partition_in_pass_score = get_partition_score_lite();
     }
 

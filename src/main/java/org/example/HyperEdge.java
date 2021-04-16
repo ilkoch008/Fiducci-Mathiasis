@@ -5,6 +5,7 @@ import java.util.Collection;
 
 public class HyperEdge {
     private ArrayList<Node> nodes = null;
+    public Node buffered_node;
     public void init(){
         nodes = new ArrayList<>();
     }
@@ -41,12 +42,43 @@ public class HyperEdge {
 
     public boolean all_nodes_on_the_other_side_of(Node node){
         boolean side = node.getSide();
-        int key = node.get_key();
         for (Node n: nodes) {
-            if (n.getSide() == side && n.get_key() != key){
+            if (n.getSide() == side && !n.equals(node)){
                 return false;
             }
         }
         return true;
+    }
+
+    public boolean one_node_on_other_side_of(Node node) {
+        boolean other_side = !node.getSide();
+        int others = 0;
+        for (Node n : this.nodes){
+            if (n.getSide() == other_side){
+                this.buffered_node = n;
+                others++;
+            }
+            if (others == 2){
+                return false;
+            }
+        }
+        return others == 1;
+    }
+
+    public boolean one_node_on_one_side_with(Node node) {
+        boolean side = node.getSide();
+        int neighbours = 0;
+        for (Node n : this.nodes){
+            if (n.getSide() == side){
+                neighbours++;
+                if (!n.equals(node)){
+                    this.buffered_node = n;
+                }
+            }
+            if (neighbours == 3){
+                return false;
+            }
+        }
+        return neighbours == 2;
     }
 }

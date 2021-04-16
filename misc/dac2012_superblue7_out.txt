@@ -1,0 +1,171 @@
+Reading from file...
+Initializing nodes...
+Reading done in 10212.407s
+================= Partition info =================
+balance_score: 0.9999999
+num_of_cuts: 798736
+cut_cost: 1.1917715
+partition_score: -0.19177163
+=================== Pass  gone ===================
+iter 1 took 164.372s
+balance_score: 0.92983127
+num_of_cuts: 234462
+cut_cost: 0.34983414
+partition_score: 0.5799971
+=================== Pass  gone ===================
+iter 2 took 182.527s
+balance_score: 0.99993914
+num_of_cuts: 186713
+cut_cost: 0.27858922
+partition_score: 0.72134995
+=================== Pass  gone ===================
+iter 3 took 171.825s
+balance_score: 0.999988
+num_of_cuts: 157616
+cut_cost: 0.2351744
+partition_score: 0.7648136
+=================== Pass  gone ===================
+iter 4 took 177.53s
+balance_score: 0.99531114
+num_of_cuts: 136818
+cut_cost: 0.20414229
+partition_score: 0.79116887
+=================== Pass  gone ===================
+iter 5 took 168.495s
+balance_score: 0.9999789
+num_of_cuts: 120975
+cut_cost: 0.1805034
+partition_score: 0.81947553
+=================== Pass  gone ===================
+iter 6 took 167.047s
+balance_score: 0.99785775
+num_of_cuts: 116522
+cut_cost: 0.1738592
+partition_score: 0.8239986
+=================== Pass  gone ===================
+iter 7 took 159.028s
+balance_score: 0.99745846
+num_of_cuts: 108774
+cut_cost: 0.16229862
+partition_score: 0.83515984
+=================== Pass  gone ===================
+iter 8 took 161.594s
+balance_score: 0.9968191
+num_of_cuts: 106263
+cut_cost: 0.15855204
+partition_score: 0.838267
+=================== Pass  gone ===================
+iter 9 took 164.264s
+balance_score: 0.99901193
+num_of_cuts: 100326
+cut_cost: 0.14969361
+partition_score: 0.8493183
+=================== Pass  gone ===================
+iter 10 took 161.502s
+balance_score: 0.99883103
+num_of_cuts: 93163
+cut_cost: 0.1390059
+partition_score: 0.85982513
+=================== Pass  gone ===================
+iter 11 took 157.686s
+balance_score: 0.99983364
+num_of_cuts: 92860
+cut_cost: 0.1385538
+partition_score: 0.86127985
+=================== Pass  gone ===================
+iter 12 took 156.284s
+balance_score: 0.99992347
+num_of_cuts: 86511
+cut_cost: 0.12908062
+partition_score: 0.8708428
+=================== Pass  gone ===================
+iter 13 took 159.577s
+balance_score: 0.99993753
+num_of_cuts: 85853
+cut_cost: 0.12809885
+partition_score: 0.8718387
+=================== Pass  gone ===================
+iter 14 took 156.302s
+balance_score: 0.9997528
+num_of_cuts: 84203
+cut_cost: 0.12563694
+partition_score: 0.8741159
+=================== Pass  gone ===================
+iter 15 took 155.88s
+balance_score: 0.9999122
+num_of_cuts: 84077
+cut_cost: 0.12544893
+partition_score: 0.87446326
+=================== Pass  gone ===================
+iter 16 took 157.319s
+balance_score: 0.999893
+num_of_cuts: 83725
+cut_cost: 0.12492372
+partition_score: 0.8749693
+=================== Pass  gone ===================
+iter 17 took 160.096s
+balance_score: 0.9998953
+num_of_cuts: 83506
+cut_cost: 0.12459695
+partition_score: 0.8752983
+=================== Pass  gone ===================
+iter 18 took 157.857s
+balance_score: 0.9998955
+num_of_cuts: 83490
+cut_cost: 0.12457308
+partition_score: 0.87532246
+=================== Pass  gone ===================
+iter 19 took 154.924s
+balance_score: 0.99989414
+num_of_cuts: 83462
+cut_cost: 0.12453131
+partition_score: 0.8753628
+=================== Pass  gone ===================
+iter 20 took 155.292s
+balance_score: 0.99989355
+num_of_cuts: 83423
+cut_cost: 0.12447311
+partition_score: 0.87542045
+=================== Pass  gone ===================
+iter 21 took 153.581s
+balance_score: 0.9998937
+num_of_cuts: 83409
+cut_cost: 0.124452226
+partition_score: 0.8754415
+=================== Pass  gone ===================
+iter 22 took 153.977s
+balance_score: 0.99989283
+num_of_cuts: 83408
+cut_cost: 0.12445073
+partition_score: 0.8754421
+=================== Pass  gone ===================
+iter 23 took 155.894s
+balance_score: 0.99989176
+num_of_cuts: 83405
+cut_cost: 0.12444626
+partition_score: 0.8754455
+=================== Pass  gone ===================
+iter 24 took 153.199s
+balance_score: 0.9998757
+num_of_cuts: 83279
+cut_cost: 0.12425826
+partition_score: 0.87561744
+=================== Pass  gone ===================
+iter 25 took 154.346s
+balance_score: 0.9998755
+num_of_cuts: 83247
+cut_cost: 0.12421051
+partition_score: 0.87566495
+=================== Pass  gone ===================
+iter 26 took 154.532s
+balance_score: 0.9998755
+num_of_cuts: 83247
+cut_cost: 0.12421051
+partition_score: 0.87566495
+================== !!! DONE !!! ==================
+balance_score: 0.9998755
+num_of_cuts: 83247
+cut_cost: 0.12421051
+partition_score: 0.87566495
+==================================================
+Output file created

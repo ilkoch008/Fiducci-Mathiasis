@@ -10,11 +10,10 @@ public class Node {
     private boolean locked = false;
     private Integer key;
     public int gain;
-    public Set<Node> incident_nodes;
+    public int new_gain;
     public Set<HyperEdge> incident_edges;
 
     public Node(){
-        incident_nodes = new HashSet<>();
         incident_edges = new HashSet<>();
     }
 
@@ -52,6 +51,10 @@ public class Node {
 
     public void move() {
         this.side = !this.side;
+    }
+
+    public boolean changed_gain(){
+        return !(new_gain == gain);
     }
 
     public static class Builder {

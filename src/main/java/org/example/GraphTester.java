@@ -14,18 +14,8 @@ public class GraphTester {
     public String output_file;
     public HyperGraph graph;
     public void run_containers_logic(){
-        File output = new File(output_file);
-        try {
-            if(output.createNewFile()){
-                System.out.println("Output file created");
-            } else {
-                System.out.println("Overwriting existing file");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         FileWriter output_writer;
+        HyperGraph.create_file(output_file);
         long start, end;
         try {
             output_writer = new FileWriter(output_file);
@@ -66,18 +56,8 @@ public class GraphTester {
     }
 
     public void run_score_modes(){
-        File output = new File(output_file);
-        try {
-            if(output.createNewFile()){
-                System.out.println("Output file created");
-            } else {
-                System.out.println("Overwriting existing file");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         FileWriter output_writer;
+        HyperGraph.create_file(output_file);
         long start, end;
         try {
             output_writer = new FileWriter(output_file);
