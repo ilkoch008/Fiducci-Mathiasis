@@ -6,9 +6,10 @@ You can find executable  ```.jar``` file [here](https://github.com/ilkoch008/Fid
 
 ## Flags
 
-```-i input_file_name``` - sets name of input file. You can check format of input file [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/manual_hmetis.pdf).
+```-i input_file_name``` - sets name of input file. You can check format of input file [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/manual_hmetis.pdf). 
+Also you can set input file with argument that ends on ```.hgr```.
 
-```-o output_file_name``` - sets name of output file. You can check format of output file [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/manual_hmetis.pdf).
+```-o output_file_name``` - optional, sets name of output file. By default ```output_file_name = input_file_name + ".part.2"``` You can check format of output file [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/manual_hmetis.pdf).
 
 ```-atb``` - with this flag nodes are added at the beginnig of lists in containers. By default they are added at the end of list.
 
@@ -35,7 +36,7 @@ if (equal_gain_choose_mode) {
 
 ```-b N``` - sets the mode of scoring the partition.
  
-```N = 0```:
+- ```N = 0```:
  
 ```
 balance_score = min(lefts, rights) / max(lefts, rights))
@@ -43,7 +44,7 @@ cut_cost = num_of_cuts * 2 / num_of_hyperEdges
 partition_score = balance_score^balance_weight / cut_cost
 ```
 
-```N = 1```:
+- ```N = 1```:
  
 ```
 balance_score = min(lefts, rights) / max(lefts, rights))
@@ -51,7 +52,7 @@ cut_cost = num_of_cuts * 2 / num_of_hyperEdges
 partition_score = balance_score*balance_weight - cut_cost
 ```
 
-```N = 2```:
+- ```N = 2```:
  
 ```
 balance_score = lefts * rights
@@ -59,7 +60,7 @@ cut_cost = num_of_cuts
 partition_score = balance_score*balance_weight - cut_cost
 ```
 
-```N = 3```: this mode does not take into account the balancing of the partitioning.
+- ```N = 3```: this mode does not take into account the balancing of the partitioning.
  
 ```
 balance_score = min(lefts, rights) / max(lefts, rights))
@@ -67,7 +68,7 @@ cut_cost = num_of_cuts * 2 / num_of_hyperEdges
 partition_score = 1 / cut_cost
 ```
 
-```N = 4```:
+- ```N = 4```:
  
 ```
 balance_score = lefts * rights / (num_of_nodes * num_of_nodes)
@@ -144,9 +145,18 @@ Here you can see final flame graph:
 
 ![](https://raw.githubusercontent.com/ilkoch008/Fiducci-Mathiasis/master/misc/flamegraph.png)
 
+UPD. After remaking ```recompute_gains_for_incident```:
+
+![](https://raw.githubusercontent.com/ilkoch008/Fiducci-Mathiasis/master/misc/flamegraph_upd.png)
+
+Now initializing of nodes takes most of execution time.
+
 ## Experiments
 
 You can see all of measurements [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/misc/results.xlsx) or in log files.
+
+__UPD.__ After optimization of ```recompute_gains_for_incident``` execution time has become less. In tables below runtime data is out of date. 
+But they are still useful for evaluating the dependence of the execution time on the parameters of the algorithm.
 
 ### 1. Different Types of Scoring
 
