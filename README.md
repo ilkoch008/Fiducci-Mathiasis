@@ -156,7 +156,7 @@ Now initializing of nodes takes most of execution time.
 You can see all of measurements [here](https://github.com/ilkoch008/Fiducci-Mathiasis/blob/master/misc/results.xlsx) or in log files.
 
 __UPD.__ After optimization of ```recompute_gains_for_incident``` execution time has become less. In tables below runtime data is out of date. 
-But they are still useful for evaluating the dependence of the execution time on the parameters of the algorithm.
+But it's still useful for evaluating the dependence of the execution time on the parameters of the algorithm.
 
 ### 1. Different Types of Scoring
 
